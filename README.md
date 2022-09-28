@@ -1,6 +1,6 @@
-# goal-http-template
+# goal-account-backend
 
-HTTP API服务开发模板
+Goal项目用户账号后端服务
 
 ## 本地开发
 
