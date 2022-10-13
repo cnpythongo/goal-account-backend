@@ -7,19 +7,12 @@ import (
 	"github.com/cnpythongo/goal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"strconv"
 )
 
-// 查询用户结构体
-type ReqGetUserListPayload struct {
-	Page             int    `json:"page" form:"page" binding:"required"`
-	Size             int    `json:"size" form:"size" binding:"required"`
-	LastLoginAtStart string `json:"last_login_at_start" form:"last_login_at_start"`
-	LastLoginAtEnd   string `json:"last_login_at_end" form:"last_login_at_end"`
-}
-
 type IUserController interface {
+	// 登录
+	Login(c *gin.Context)
 	// 创建用户
 	CreateUser(c *gin.Context)
 	// 根据ID获取用户
@@ -28,11 +21,32 @@ type IUserController interface {
 	GetUserByUuid(c *gin.Context)
 	// 获取用户查询集
 	GetUserList(c *gin.Context)
+	// 更新用户信息、状态等
+	UpdateOneUser(c *gin.Context)
+	// 更新用户信息、状态等
+	UpdateUsers(c *gin.Context)
+	// 删除用户, 逻辑删, 支持批量
+	DeleteUsers(c *gin.Context)
 }
 
 type UserController struct {
 	Logger  *logrus.Logger       `inject:""`
 	UserSvc service.IUserService `inject:"UserSvc"`
+}
+
+func (u *UserController) Login(c *gin.Context) {
+	payload := &service.ReqAuthLoginPayload{}
+	err := c.ShouldBindJSON(payload)
+	if err != nil {
+		response.FailJsonResp(c, response.PayloadError, nil)
+		return
+	}
+	user, code, err := u.UserSvc.Login(payload)
+	if code != response.SuccessCode {
+		response.FailJsonResp(c, code, err)
+		return
+	}
+	response.SuccessJsonResp(c, user, nil)
 }
 
 func (u *UserController) CreateUser(c *gin.Context) {
@@ -42,19 +56,9 @@ func (u *UserController) CreateUser(c *gin.Context) {
 		response.FailJsonResp(c, response.PayloadError, nil)
 		return
 	}
-	eu, _ := u.UserSvc.GetUserByUsername(payload.Username)
-	if eu != nil {
-		response.FailJsonResp(c, response.AccountUserExistError, nil)
-		return
-	}
-	ue, _ := u.UserSvc.GetUserByEmail(payload.Email)
-	if ue != nil {
-		response.FailJsonResp(c, response.AccountEmailExistsError, nil)
-		return
-	}
-	user, err := u.UserSvc.CreateUser(payload)
-	if err != nil {
-		response.FailJsonResp(c, response.AccountCreateError, nil)
+	user, code, err := u.UserSvc.CreateUser(payload)
+	if code != response.SuccessCode {
+		response.FailJsonResp(c, code, err)
 		return
 	}
 	response.SuccessJsonResp(c, user, nil)
@@ -67,13 +71,9 @@ func (u *UserController) GetUserById(c *gin.Context) {
 		response.FailJsonResp(c, response.AccountUserIdError, nil)
 		return
 	}
-	result, err := u.UserSvc.GetUserById(id)
+	result, code, err := u.UserSvc.GetUserById(id)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			response.FailJsonResp(c, response.AccountUserNotExistError, nil)
-		} else {
-			response.FailJsonResp(c, response.AccountQueryUserError, nil)
-		}
+		response.FailJsonResp(c, code, err)
 		return
 	}
 	response.SuccessJsonResp(c, result, nil)
@@ -81,13 +81,9 @@ func (u *UserController) GetUserById(c *gin.Context) {
 
 func (u *UserController) GetUserByUuid(c *gin.Context) {
 	uid := c.Param("uid")
-	result, err := u.UserSvc.GetUserByUuid(uid)
+	result, code, err := u.UserSvc.GetUserByUuid(uid)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			response.FailJsonResp(c, response.AccountUserNotExistError, nil)
-		} else {
-			response.FailJsonResp(c, response.AccountQueryUserError, nil)
-		}
+		response.FailJsonResp(c, code, err)
 		return
 	}
 	response.SuccessJsonResp(c, result, nil)
@@ -95,22 +91,71 @@ func (u *UserController) GetUserByUuid(c *gin.Context) {
 
 // 获取用户列表
 func (u *UserController) GetUserList(c *gin.Context) {
-	var payload ReqGetUserListPayload
-	err := c.ShouldBindQuery(&payload)
+	payload := &service.ReqGetUserListPayload{}
+	err := c.ShouldBindQuery(payload)
 	if err != nil {
-		u.Logger.Error(err)
 		response.FailJsonResp(c, response.AccountQueryUserParamError, nil)
 		return
 	}
-	page := payload.Page
-	size := payload.Size
 	// conditions := map[string]interface{}{}
-	result, total, err := u.UserSvc.GetUserQueryset(page, size, nil)
+	users, total, code, err := u.UserSvc.GetUserQueryset(payload, nil)
 	if err != nil {
-		response.FailJsonResp(c, response.AccountQueryUserListError, nil)
+		response.FailJsonResp(c, code, err)
 		return
 	}
-	response.SuccessJsonResp(c, result, map[string]interface{}{
-		"total": total, "pages": utils.TotalPage(size, total),
-	})
+	result := response.Pagination(payload.Page, payload.Size, total)
+	result["rows"] = users
+	response.SuccessJsonResp(c, result, nil)
+}
+
+func (u *UserController) UpdateOneUser(c *gin.Context) {
+	uid := c.Param("uid")
+	payload := &service.ReqUpdateOneUser{}
+	err := c.ShouldBindJSON(payload)
+	if err != nil {
+		response.FailJsonResp(c, response.PayloadError, err)
+		return
+	}
+	user, code, err := u.UserSvc.UpdateOneUser(uid, payload)
+	if err != nil {
+		response.FailJsonResp(c, code, err)
+		return
+	}
+	response.SuccessJsonResp(c, user, nil)
+}
+
+func (u *UserController) UpdateUsers(c *gin.Context) {
+	payload := &service.ReqUpdateUsers{}
+	err := c.ShouldBindJSON(payload)
+	if err != nil {
+		response.FailJsonResp(c, response.PayloadError, err)
+		return
+	}
+	status := payload.Status
+	if status != "" && utils.StrInArrayIndex(status, model.UserStatusAll) == -1 {
+		response.FailJsonResp(c, response.PayloadError, nil)
+		return
+	}
+
+	code, err := u.UserSvc.UpdateUsers(payload)
+	if err != nil {
+		response.FailJsonResp(c, code, err)
+		return
+	}
+	response.SuccessJsonResp(c, nil, nil)
+}
+
+func (u *UserController) DeleteUsers(c *gin.Context) {
+	payload := &service.ReqDeleteUsers{}
+	err := c.ShouldBindJSON(payload)
+	if err != nil {
+		response.FailJsonResp(c, response.PayloadError, err)
+		return
+	}
+	code, err := u.UserSvc.DeleteUsers(payload.Uids)
+	if err != nil {
+		response.FailJsonResp(c, code, err)
+		return
+	}
+	response.SuccessJsonResp(c, nil, nil)
 }

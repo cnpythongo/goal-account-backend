@@ -21,6 +21,10 @@ type IUserRepository interface {
 	GetUserByUsername(username string) (*model.User, error)
 	// 根据email获取用户
 	GetUserByEmail(email string) (*model.User, error)
+	// 更新用户信息、状态等
+	UpdateUser(user *model.User) (*model.User, error)
+	// 批量更新用户信息、状态等
+	UpdateUsers(uids []string, values interface{}) error
 }
 
 type UserRepository struct {
@@ -73,15 +77,15 @@ func (u *UserRepository) GetUserQueryset(page, size int, conditions interface{})
 	if conditions != nil {
 		qs = qs.Where(conditions)
 	}
-	if page > 0 && size > 0 {
-		offset := (page - 1) * size
-		qs = qs.Limit(size).Offset(offset)
-	}
 	var total int64
 	err := qs.Count(&total).Error
 	if err != nil {
 		u.Logger.Errorf("admin.user.UserRepository.GetUserQueryset Count Error ==> ", err)
 		return nil, 0, err
+	}
+	if page > 0 && size > 0 {
+		offset := (page - 1) * size
+		qs = qs.Limit(size).Offset(offset)
 	}
 	result := model.NewUsers()
 	err = qs.Find(&result).Error
@@ -96,4 +100,14 @@ func (u *UserRepository) GetUserById(userID int) (*model.User, error) {
 	condition := map[string]interface{}{"id": userID}
 	result, err := u.GetUserByCondition(condition)
 	return result, err
+}
+
+func (u *UserRepository) UpdateUser(user *model.User) (*model.User, error) {
+	err := u.DB.Save(&user).Error
+	return user, err
+}
+
+func (u *UserRepository) UpdateUsers(uids []string, values interface{}) error {
+	err := u.DB.Model(model.NewUser()).Where("uuid in ?", uids).Updates(values).Error
+	return err
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/cnpythongo/goal/router/middleware"
 	"github.com/facebookgo/inject"
 	"github.com/gin-gonic/gin"
 
@@ -29,11 +30,17 @@ func InitAdminRouters(cfg *config.Configuration) *gin.Engine {
 	// common test api
 	apiGroup := route.Group("/api")
 	apiGroup.GET("/ping", liveController.Ping)
-
 	// admin api
 	adminGroup := route.Group("/api/account")
+	adminGroup.POST("/login", userController.Login)
+
+	adminGroup.Use(middleware.JWTAuth())
 	adminGroup.GET("/users", userController.GetUserList)
-	adminGroup.GET("/users/:uid", userController.GetUserByUuid)
 	adminGroup.POST("/users", userController.CreateUser)
+	adminGroup.PATCH("/users", userController.UpdateUsers)
+	adminGroup.DELETE("/users", userController.DeleteUsers)
+
+	adminGroup.GET("/users/:uid", userController.GetUserByUuid)
+	adminGroup.PATCH("/users/:uid", userController.UpdateOneUser)
 	return route
 }

@@ -1,11 +1,9 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
 	"github.com/cnpythongo/goal/pkg/response"
 	"github.com/cnpythongo/goal/service"
+	"github.com/gin-gonic/gin"
 )
 
 type IUserController interface {
@@ -19,13 +17,9 @@ type UserController struct {
 
 func (u *UserController) GetUserByUuid(c *gin.Context) {
 	uid := c.Param("uid")
-	result, err := u.UserSvc.GetUserByUuid(uid)
+	result, code, err := u.UserSvc.GetUserByUuid(uid)
 	if err != nil {
-		code := response.AccountQueryUserError
-		if err == gorm.ErrRecordNotFound {
-			code = response.AccountUserNotExistError
-		}
-		response.FailJsonResp(c, code, nil)
+		response.FailJsonResp(c, code, err)
 		return
 	}
 	response.SuccessJsonResp(c, result, nil)
