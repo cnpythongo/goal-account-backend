@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"github.com/cnpythongo/goal/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	"github.com/cnpythongo/goal/model"
 )
 
 type IUserRepository interface {
@@ -24,7 +25,7 @@ type IUserRepository interface {
 	// 更新用户信息、状态等
 	UpdateUser(user *model.User) (*model.User, error)
 	// 批量更新用户信息、状态等
-	UpdateUsers(uids []string, values interface{}) error
+	UpdateUsers(uuids []string, values interface{}) error
 }
 
 type UserRepository struct {
@@ -107,7 +108,7 @@ func (u *UserRepository) UpdateUser(user *model.User) (*model.User, error) {
 	return user, err
 }
 
-func (u *UserRepository) UpdateUsers(uids []string, values interface{}) error {
-	err := u.DB.Model(model.NewUser()).Where("uuid in ?", uids).Updates(values).Error
+func (u *UserRepository) UpdateUsers(uuids []string, values interface{}) error {
+	err := u.DB.Model(model.NewUser()).Where("uuid in ?", uuids).Updates(values).Error
 	return err
 }

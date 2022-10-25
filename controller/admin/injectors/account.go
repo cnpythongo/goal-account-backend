@@ -1,6 +1,7 @@
-package admin
+package injectors
 
 import (
+	"github.com/cnpythongo/goal/controller/admin/account"
 	"github.com/cnpythongo/goal/model"
 	"github.com/cnpythongo/goal/pkg/common/log"
 	"github.com/facebookgo/inject"
@@ -9,8 +10,8 @@ import (
 	"github.com/cnpythongo/goal/service"
 )
 
-func InjectUserController(injector inject.Graph) UserController {
-	var ctl UserController
+func InjectUserController(injector inject.Graph) account.UserController {
+	var ctl account.UserController
 	err := injector.Provide(
 		&inject.Object{Value: &repository.UserRepository{}, Name: "UserRepo"},
 		&inject.Object{Value: &service.UserService{}, Name: "UserSvc"},
@@ -25,8 +26,8 @@ func InjectUserController(injector inject.Graph) UserController {
 	return ctl
 }
 
-func InjectUserProfileController(injector inject.Graph) UserProfileController {
-	var ctl UserProfileController
+func InjectUserProfileController(injector inject.Graph) account.UserProfileController {
+	var ctl account.UserProfileController
 	err := injector.Provide(
 		&inject.Object{Value: &repository.UserProfileRepository{}, Name: "UserProfileRepo"},
 		&inject.Object{Value: &service.UserProfileService{}, Name: "UserProfileSvc"},
@@ -41,8 +42,8 @@ func InjectUserProfileController(injector inject.Graph) UserProfileController {
 	return ctl
 }
 
-func InjectLoginHistoryController(injector inject.Graph) LoginHistoryController {
-	var ctl LoginHistoryController
+func InjectLoginHistoryController(injector inject.Graph) account.LoginHistoryController {
+	var ctl account.LoginHistoryController
 	err := injector.Provide(
 		&inject.Object{Value: model.GetDB()},
 		&inject.Object{Value: log.GetLogger()},

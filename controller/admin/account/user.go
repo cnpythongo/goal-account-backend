@@ -1,13 +1,14 @@
-package admin
+package account
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"strconv"
+
 	"github.com/cnpythongo/goal-tools/utils"
 	"github.com/cnpythongo/goal/model"
 	"github.com/cnpythongo/goal/pkg/response"
 	"github.com/cnpythongo/goal/service"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
-	"strconv"
 )
 
 type IUserController interface {
@@ -125,7 +126,7 @@ func (u *UserController) UpdateOneUser(c *gin.Context) {
 }
 
 func (u *UserController) UpdateUsers(c *gin.Context) {
-	payload := &service.ReqUpdateUsers{}
+	payload := &service.ReqUpdateUserAttrs{}
 	err := c.ShouldBindJSON(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.PayloadError, err)
@@ -152,7 +153,7 @@ func (u *UserController) DeleteUsers(c *gin.Context) {
 		response.FailJsonResp(c, response.PayloadError, err)
 		return
 	}
-	code, err := u.UserSvc.DeleteUsers(payload.Uids)
+	code, err := u.UserSvc.DeleteUsers(payload.UUIDs)
 	if err != nil {
 		response.FailJsonResp(c, code, err)
 		return

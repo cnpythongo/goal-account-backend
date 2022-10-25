@@ -1,4 +1,4 @@
-package admin
+package account
 
 import (
 	"github.com/cnpythongo/goal/model"

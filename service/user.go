@@ -1,15 +1,15 @@
 package service
 
 import (
-	"github.com/cnpythongo/goal-tools/utils"
-	"github.com/cnpythongo/goal/model"
-	"github.com/cnpythongo/goal/pkg/basic"
-	"github.com/cnpythongo/goal/pkg/response"
-	"github.com/cnpythongo/goal/repository"
-	"github.com/cnpythongo/goal/router/middleware"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"time"
+
+	"github.com/cnpythongo/goal-tools/utils"
+	"github.com/cnpythongo/goal/model"
+	"github.com/cnpythongo/goal/pkg/response"
+	"github.com/cnpythongo/goal/repository"
+	"github.com/cnpythongo/goal/router/middleware"
 )
 
 // 查询用户结构体
@@ -43,10 +43,10 @@ type ReqUpdateOneUser struct {
 }
 
 type reqBatchUserUuids struct {
-	Uids []string `json:"uids" binding:"required"`
+	UUIDs []string `json:"uuids" binding:"required"`
 }
 
-type ReqUpdateUsers struct {
+type ReqUpdateUserAttrs struct {
 	reqBatchUserUuids
 	Status string `json:"status" binding:"required"`
 }
@@ -73,9 +73,9 @@ type IUserService interface {
 	// 更新用户信息
 	UpdateOneUser(uid string, payload *ReqUpdateOneUser) (*model.User, int, error)
 	// 批量更新用户属性，如：状态
-	UpdateUsers(payload *ReqUpdateUsers) (int, error)
+	UpdateUsers(payload *ReqUpdateUserAttrs) (int, error)
 	// 更新用户信息, 支持批量删
-	DeleteUsers(uids []string) (int, error)
+	DeleteUsers(uuids []string) (int, error)
 }
 
 type UserService struct {
@@ -212,32 +212,28 @@ func (u *UserService) UpdateOneUser(uid string, payload *ReqUpdateOneUser) (*mod
 	return user, response.SuccessCode, nil
 }
 
-func (u *UserService) UpdateUsers(payload *ReqUpdateUsers) (int, error) {
+func (u *UserService) UpdateUsers(payload *ReqUpdateUserAttrs) (int, error) {
 	values := map[string]interface{}{
 		"status": payload.Status,
 	}
 	if payload.Status == model.UserStatusActive || payload.Status == model.UserStatusFreeze {
 		values["deleted_at"] = 0
 	}
-	err := u.UserRepo.UpdateUsers(payload.Uids, values)
+	err := u.UserRepo.UpdateUsers(payload.UUIDs, values)
 	if err != nil {
 		return response.AccountUserUpdateError, err
 	}
 	return response.SuccessCode, nil
 }
 
-func (u *UserService) DeleteUsers(uids []string) (int, error) {
+func (u *UserService) DeleteUsers(uuids []string) (int, error) {
 	now := time.Now().Unix()
-
-	values := &model.User{
-		BaseModel: basic.BaseModel{
-			UpdatedAt: now,
-			DeletedAt: now,
-		},
-		Status: model.UserStatusDelete,
+	values := map[string]interface{}{
+		"status":     model.UserStatusDelete,
+		"updated_at": now,
+		"deleted_at": now,
 	}
-
-	err := u.UserRepo.UpdateUsers(uids, values)
+	err := u.UserRepo.UpdateUsers(uuids, values)
 	if err != nil {
 		return response.AccountUserDeleteError, err
 	}
