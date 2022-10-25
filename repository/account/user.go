@@ -14,7 +14,7 @@ type IUserRepository interface {
 	// 根据UUID获取用户
 	GetUserByUuid(uuid string) (*account.User, error)
 	// 获取用户查询集
-	GetUserQueryset(page, size int, conditions interface{}) ([]*account.User, int, error)
+	FindUsers(page, size int, conditions interface{}) ([]*account.User, int, error)
 	// 根据条件获取单一用户
 	GetUserByCondition(condition interface{}) (*account.User, error)
 	// 根据username获取用户
@@ -72,7 +72,7 @@ func (u *UserRepository) GetUserByUuid(uuid string) (*account.User, error) {
 	return result, err
 }
 
-func (u *UserRepository) GetUserQueryset(page, size int, conditions interface{}) ([]*account.User, int, error) {
+func (u *UserRepository) FindUsers(page, size int, conditions interface{}) ([]*account.User, int, error) {
 	qs := u.DB.Model(account.NewUser())
 	if conditions != nil {
 		qs = qs.Where(conditions)
@@ -80,7 +80,7 @@ func (u *UserRepository) GetUserQueryset(page, size int, conditions interface{})
 	var total int64
 	err := qs.Count(&total).Error
 	if err != nil {
-		u.Logger.Errorf("admin.user.UserRepository.GetUserQueryset Count Error ==> ", err)
+		u.Logger.Errorf("admin.account.user.UserRepository.FindUsers Count Error ==> ", err)
 		return nil, 0, err
 	}
 	if page > 0 && size > 0 {
@@ -90,7 +90,7 @@ func (u *UserRepository) GetUserQueryset(page, size int, conditions interface{})
 	result := account.NewUsers()
 	err = qs.Find(&result).Error
 	if err != nil {
-		u.Logger.Errorf("admin.user.UserRepository.GetUserQueryset Query Error ==> ", err)
+		u.Logger.Errorf("admin.account.user.UserRepository.FindUsers Query Error ==> ", err)
 		return nil, 0, err
 	}
 	return result, int(total), nil

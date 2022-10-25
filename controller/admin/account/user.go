@@ -100,7 +100,7 @@ func (u *UserController) GetUserList(c *gin.Context) {
 		return
 	}
 	// conditions := map[string]interface{}{}
-	users, total, code, err := u.UserSvc.GetUserQueryset(payload, nil)
+	users, total, code, err := u.UserSvc.FindUsers(payload, nil)
 	if err != nil {
 		response.FailJsonResp(c, code, err)
 		return

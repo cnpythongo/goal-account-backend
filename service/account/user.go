@@ -1,8 +1,8 @@
 package account
 
 import (
-	account2 "github.com/cnpythongo/goal/model/account"
-	"github.com/cnpythongo/goal/repository/account"
+	"github.com/cnpythongo/goal/model/account"
+	accountRepo "github.com/cnpythongo/goal/repository/account"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"time"
@@ -58,21 +58,21 @@ type IUserService interface {
 	// 登录
 	Login(payload *ReqAuthLoginPayload) (*RespAuthUser, int, error)
 	// 创建用户
-	CreateUser(payload *account2.User) (*account2.User, int, error)
+	CreateUser(payload *account.User) (*account.User, int, error)
 	// 根据ID获取用户
-	GetUserById(id int) (*account2.User, int, error)
+	GetUserById(id int) (*account.User, int, error)
 	// 根据UUID获取用户
-	GetUserByUuid(uuid string) (*account2.User, int, error)
+	GetUserByUuid(uuid string) (*account.User, int, error)
 	// 获取用户查询集
-	GetUserQueryset(payload *ReqGetUserListPayload, conditions interface{}) (result []*account2.User, total, code int, err error)
+	FindUsers(payload *ReqGetUserListPayload, conditions interface{}) (result []*account.User, total, code int, err error)
 	// 根据条件获取单一用户
-	GetUserByCondition(condition interface{}) (*account2.User, error)
+	GetUserByCondition(condition interface{}) (*account.User, error)
 	// 根据username获取用户
-	GetUserByUsername(username string) (*account2.User, int, error)
+	GetUserByUsername(username string) (*account.User, int, error)
 	// 根据email获取用户
-	GetUserByEmail(email string) (*account2.User, int, error)
+	GetUserByEmail(email string) (*account.User, int, error)
 	// 更新用户信息
-	UpdateOneUser(uid string, payload *ReqUpdateOneUser) (*account2.User, int, error)
+	UpdateOneUser(uid string, payload *ReqUpdateOneUser) (*account.User, int, error)
 	// 批量更新用户属性，如：状态
 	UpdateUsers(payload *ReqUpdateUserAttrs) (int, error)
 	// 更新用户信息, 支持批量删
@@ -80,7 +80,7 @@ type IUserService interface {
 }
 
 type UserService struct {
-	UserRepo account.IUserRepository `inject:"UserRepo"`
+	UserRepo accountRepo.IUserRepository `inject:"UserRepo"`
 }
 
 func (u *UserService) Login(payload *ReqAuthLoginPayload) (*RespAuthUser, int, error) {
@@ -112,12 +112,12 @@ func (u *UserService) Login(payload *ReqAuthLoginPayload) (*RespAuthUser, int, e
 	return au, response.SuccessCode, nil
 }
 
-func (u *UserService) GetUserByCondition(condition interface{}) (*account2.User, error) {
+func (u *UserService) GetUserByCondition(condition interface{}) (*account.User, error) {
 	result, err := u.UserRepo.GetUserByCondition(condition)
 	return result, err
 }
 
-func (u *UserService) GetUserByUsername(username string) (*account2.User, int, error) {
+func (u *UserService) GetUserByUsername(username string) (*account.User, int, error) {
 	result, err := u.UserRepo.GetUserByUsername(username)
 	if err != nil {
 		code := response.AccountQueryUserError
@@ -129,7 +129,7 @@ func (u *UserService) GetUserByUsername(username string) (*account2.User, int, e
 	return result, response.SuccessCode, nil
 }
 
-func (u *UserService) GetUserByEmail(email string) (*account2.User, int, error) {
+func (u *UserService) GetUserByEmail(email string) (*account.User, int, error) {
 	result, err := u.UserRepo.GetUserByEmail(email)
 	if err != nil {
 		code := response.AccountQueryUserError
@@ -141,7 +141,7 @@ func (u *UserService) GetUserByEmail(email string) (*account2.User, int, error) 
 	return result, response.SuccessCode, nil
 }
 
-func (u *UserService) CreateUser(payload *account2.User) (*account2.User, int, error) {
+func (u *UserService) CreateUser(payload *account.User) (*account.User, int, error) {
 	eu, _, _ := u.GetUserByUsername(payload.Username)
 	if eu != nil {
 		return nil, response.AccountUserExistError, nil
@@ -157,7 +157,7 @@ func (u *UserService) CreateUser(payload *account2.User) (*account2.User, int, e
 	return result, response.SuccessCode, nil
 }
 
-func (u *UserService) GetUserById(id int) (*account2.User, int, error) {
+func (u *UserService) GetUserById(id int) (*account.User, int, error) {
 	result, err := u.UserRepo.GetUserById(id)
 	if err != nil {
 		code := response.AccountQueryUserError
@@ -169,7 +169,7 @@ func (u *UserService) GetUserById(id int) (*account2.User, int, error) {
 	return result, response.SuccessCode, err
 }
 
-func (u *UserService) GetUserByUuid(uuid string) (*account2.User, int, error) {
+func (u *UserService) GetUserByUuid(uuid string) (*account.User, int, error) {
 	result, err := u.UserRepo.GetUserByUuid(uuid)
 	if err != nil {
 		code := response.AccountQueryUserError
@@ -181,17 +181,17 @@ func (u *UserService) GetUserByUuid(uuid string) (*account2.User, int, error) {
 	return result, response.SuccessCode, nil
 }
 
-func (u *UserService) GetUserQueryset(payload *ReqGetUserListPayload, conditions interface{}) (result []*account2.User, total, code int, err error) {
+func (u *UserService) FindUsers(payload *ReqGetUserListPayload, conditions interface{}) (result []*account.User, total, code int, err error) {
 	page := payload.Page
 	size := payload.Size
-	result, total, err = u.UserRepo.GetUserQueryset(page, size, conditions)
+	result, total, err = u.UserRepo.FindUsers(page, size, conditions)
 	if err != nil {
 		return nil, total, response.AccountQueryUserListError, err
 	}
 	return result, total, response.SuccessCode, nil
 }
 
-func (u *UserService) UpdateOneUser(uid string, payload *ReqUpdateOneUser) (*account2.User, int, error) {
+func (u *UserService) UpdateOneUser(uid string, payload *ReqUpdateOneUser) (*account.User, int, error) {
 	user, code, err := u.GetUserByUuid(uid)
 	if err != nil {
 		return nil, code, err
