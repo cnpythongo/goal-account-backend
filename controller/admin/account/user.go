@@ -1,6 +1,8 @@
 package account
 
 import (
+	account2 "github.com/cnpythongo/goal/model/account"
+	"github.com/cnpythongo/goal/service/account"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"strconv"
@@ -8,7 +10,6 @@ import (
 	"github.com/cnpythongo/goal-tools/utils"
 	"github.com/cnpythongo/goal/model"
 	"github.com/cnpythongo/goal/pkg/response"
-	"github.com/cnpythongo/goal/service"
 )
 
 type IUserController interface {
@@ -32,11 +33,11 @@ type IUserController interface {
 
 type UserController struct {
 	Logger  *logrus.Logger       `inject:""`
-	UserSvc service.IUserService `inject:"UserSvc"`
+	UserSvc account.IUserService `inject:"UserSvc"`
 }
 
 func (u *UserController) Login(c *gin.Context) {
-	payload := &service.ReqAuthLoginPayload{}
+	payload := &account.ReqAuthLoginPayload{}
 	err := c.ShouldBindJSON(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.PayloadError, nil)
@@ -51,7 +52,7 @@ func (u *UserController) Login(c *gin.Context) {
 }
 
 func (u *UserController) CreateUser(c *gin.Context) {
-	payload := model.NewUser()
+	payload := account2.NewUser()
 	err := c.ShouldBindJSON(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.PayloadError, nil)
@@ -92,7 +93,7 @@ func (u *UserController) GetUserByUuid(c *gin.Context) {
 
 // 获取用户列表
 func (u *UserController) GetUserList(c *gin.Context) {
-	payload := &service.ReqGetUserListPayload{}
+	payload := &account.ReqGetUserListPayload{}
 	err := c.ShouldBindQuery(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.AccountQueryUserParamError, nil)
@@ -111,7 +112,7 @@ func (u *UserController) GetUserList(c *gin.Context) {
 
 func (u *UserController) UpdateOneUser(c *gin.Context) {
 	uid := c.Param("uid")
-	payload := &service.ReqUpdateOneUser{}
+	payload := &account.ReqUpdateOneUser{}
 	err := c.ShouldBindJSON(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.PayloadError, err)
@@ -126,7 +127,7 @@ func (u *UserController) UpdateOneUser(c *gin.Context) {
 }
 
 func (u *UserController) UpdateUsers(c *gin.Context) {
-	payload := &service.ReqUpdateUserAttrs{}
+	payload := &account.ReqUpdateUserAttrs{}
 	err := c.ShouldBindJSON(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.PayloadError, err)
@@ -147,7 +148,7 @@ func (u *UserController) UpdateUsers(c *gin.Context) {
 }
 
 func (u *UserController) DeleteUsers(c *gin.Context) {
-	payload := &service.ReqDeleteUsers{}
+	payload := &account.ReqDeleteUsers{}
 	err := c.ShouldBindJSON(payload)
 	if err != nil {
 		response.FailJsonResp(c, response.PayloadError, err)

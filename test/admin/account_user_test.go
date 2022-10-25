@@ -2,7 +2,7 @@ package admin
 
 import (
 	"fmt"
-	"github.com/cnpythongo/goal/model"
+	"github.com/cnpythongo/goal/model/account"
 	"github.com/cnpythongo/goal/test/utils"
 	"github.com/go-playground/assert/v2"
 	"net/http"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	payload := model.User{
+	payload := account.User{
 		Username: "lyh333555",
 		Password: "123123",
 		Email:    "aaabbbddd@qq.com",

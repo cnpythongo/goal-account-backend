@@ -1,7 +1,7 @@
-package api
+package account
 
 import (
-	"github.com/cnpythongo/goal/service"
+	"github.com/cnpythongo/goal/service/account"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,7 +10,7 @@ type ILoginHistoryController interface {
 }
 
 type LoginHistoryController struct {
-	LoginHistorySvc service.ILoginHistoryService `inject:"LoginHistorySvc"`
+	LoginHistorySvc account.ILoginHistoryService `inject:"LoginHistorySvc"`
 }
 
 func (l *LoginHistoryController) GetUserLoginHistory(c *gin.Context) {

@@ -1,4 +1,4 @@
-package model
+package account
 
 import (
 	"github.com/cnpythongo/goal-tools/utils"
