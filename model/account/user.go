@@ -20,7 +20,7 @@ type User struct {
 	Gender      int    `json:"gender" gorm:"column:gender;type:int(11);default:0;comment:性别:0-保密,1-男,2-女"`
 	Signature   string `json:"signature" gorm:"column:signature;type:varchar(512);default:'';comment:个性化签名"`
 	LastLoginAt int64  `json:"last_login_at" gorm:"column:last_login_at;default:0;comment:最后登录时间"`
-	Status      string `json:"status" gorm:"column:status;default:'active';comment:用户状态,active-激活,freeze-冻结,delete-删除"`
+	Status      string `json:"status" gorm:"column:status;type:enum('active', 'freeze', 'deleted');default:'active';comment:用户状态,active-激活,freeze-冻结,delete-删除"`
 }
 
 func NewUser() *User {
