@@ -17,10 +17,13 @@ type User struct {
 	Salt        string `json:"-" gorm:"column:salt;type:varchar(20);not null;comment:密码加盐"`
 	Email       string `json:"email" gorm:"column:email;type:varchar(200);default:'';comment:邮箱"`
 	Avatar      string `json:"avatar" gorm:"column:avatar;type:varchar(200);default:'';comment:用户头像"`
-	Gender      int    `json:"gender" gorm:"column:gender;type:int(11);default:0;comment:性别:0-保密,1-男,2-女"`
+	Gender      int64  `json:"gender" gorm:"column:gender;type:int(11);default:0;comment:性别:0-保密,1-男,2-女"`
 	Signature   string `json:"signature" gorm:"column:signature;type:varchar(512);default:'';comment:个性化签名"`
 	LastLoginAt int64  `json:"last_login_at" gorm:"column:last_login_at;default:0;comment:最后登录时间"`
 	Status      string `json:"status" gorm:"column:status;type:enum('active', 'freeze', 'deleted');default:'active';comment:用户状态,active-激活,freeze-冻结,delete-删除"`
+
+	UserProfile    UserProfile
+	LoginHistories []LoginHistory
 }
 
 func NewUser() *User {
