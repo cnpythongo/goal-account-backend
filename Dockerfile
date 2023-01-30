@@ -10,7 +10,7 @@ ENV GOARCH amd64
 ENV CGO_ENABLED 0
 RUN cd /app \
     && go mod download \
-    && time go build -o goal-${GOAL_APP} cmd/${GOAL_APP}/main.go
+    && time go build -o goal_${GOAL_APP} cmd/${GOAL_APP}/main.go
 
 
 FROM alpine
@@ -22,5 +22,5 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apk del tzdata \
     && mkdir settings runtime logs
-COPY --from=build-env /app/goal-${GOAL_APP} /app/goal
+COPY --from=build-env /app/goal_${GOAL_APP} /app/goal
 CMD ["echo", "hello goal app"]

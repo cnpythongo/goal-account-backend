@@ -1,16 +1,16 @@
-API_IMAGE_NAME = goal-api
-API_CONTAINER_NAME = goal-api-service
+API_IMAGE_NAME = goal_account_api
+API_CONTAINER_NAME = goal_account_api_service
 API_PORT = 8100
 
-ADMIN_IMAGE_NAME = goal-admin
-ADMIN_CONTAINER_NAME = goal-admin-service
+ADMIN_IMAGE_NAME = goal_account_admin
+ADMIN_CONTAINER_NAME = goal_account_admin_service
 ADMIN_PORT = 8200
 
 build-api:
-	docker build --build-arg GOAL_APP=api -t $(API_IMAGE_NAME) .
+	docker build --build-arg GOAL_APP=account_api -t $(API_IMAGE_NAME) .
 
 build-admin:
-	docker build --build-arg GOAL_APP=admin -t $(ADMIN_IMAGE_NAME) .
+	docker build --build-arg GOAL_APP=account_admin -t $(ADMIN_IMAGE_NAME) .
 
 run-api:
 	docker run -d --name $(API_CONTAINER_NAME) -p $(API_PORT):$(API_PORT) $(API_IMAGE_NAME)

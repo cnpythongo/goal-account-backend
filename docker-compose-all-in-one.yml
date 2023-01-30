@@ -27,9 +27,9 @@ services:
     command:
       redis-server /usr/local/etc/redis/redis.conf
 
-  goal_api:
-    image: goal-api
-    container_name: goal_api_service
+  goal_account_api:
+    image: goal_account_api
+    container_name: goal_account_api_service
     restart: always
     ports:
       - "8100:8100"
@@ -45,9 +45,9 @@ services:
     command:
       ["./goal", "start", "-c", "settings/compose.json"]
 
-  goal_admin:
-    image: goal-admin
-    container_name: goal_admin_service
+  goal_account_admin:
+    image: goal_account_admin
+    container_name: goal_account_admin_service
     restart: always
     ports:
       - "8200:8200"
