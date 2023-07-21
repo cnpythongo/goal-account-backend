@@ -7,7 +7,7 @@ import (
 )
 
 type IRoleRepository interface {
-	FindRoles(page, size int, conditions interface{}) ([]*system.Role, int64, error)
+	FindRoles(page, size int, conditions interface{}) ([]*system.Role, int, error)
 
 	GetRoleById(id int64) (*system.Role, error)
 	GetRoleByName(name string) (*system.Role, error)
@@ -22,7 +22,7 @@ type RoleRepository struct {
 	Logger *logrus.Logger `inject:""`
 }
 
-func (r *RoleRepository) FindRoles(page, size int, conditions interface{}) ([]*system.Role, int64, error) {
+func (r *RoleRepository) FindRoles(page, size int, conditions interface{}) ([]*system.Role, int, error) {
 	panic("implement me")
 }
 
